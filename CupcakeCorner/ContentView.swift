@@ -19,42 +19,63 @@ struct Result: Codable {
 
 struct ContentView: View {
     @State private var results = [Result]()
-
-    var body: some View {
-    VStack{
-        AsyncImage(url: URL(string: "https://hws.dev/img/logo.png")) { phase in
-            if let image = phase.image {
-                image
-                    .resizable()
-                    .scaledToFit()
-            } else if phase.error != nil {
-                Text("There was an error loading the image.")
-            } else {
-                ProgressView()
-            }
-        }
-        .frame(width: 50, height: 50)
-        
-        List(results, id: \.trackId) { item in
-            VStack(alignment: .leading) {
-                Text(item.trackName)
-                    .font(.headline)
-                Text(item.collectionName)
-            }
-        }
-        .task {
-            await loadData()
-        }
+    
+    @State private var username = ""
+    @State private var email = ""
+    
+    var disableForm: Bool {
+        username.count < 5 || email.count < 5
     }
+    
+    var body: some View {
+        VStack{
+            Form {
+                Section {
+                    TextField("Username", text: $username)
+                    TextField("Email", text: $email)
+                }
+                
+                Section {
+                    Button("Create account") {
+                        print("Creating account…")
+                    }
+                }
+                .disabled(disableForm)
+            }
+            
+            AsyncImage(url: URL(string: "https://hws.dev/img/logo.png")) { phase in
+                if let image = phase.image {
+                    image
+                        .resizable()
+                        .scaledToFit()
+                } else if phase.error != nil {
+                    Text("There was an error loading the image.")
+                } else {
+                    ProgressView()
+                }
+            }
+            .frame(width: 50, height: 50)
+            
+            List(results, id: \.trackId) { item in
+                VStack(alignment: .leading) {
+                    Text(item.trackName)
+                        .font(.headline)
+                    Text(item.collectionName)
+                }
+            }
+            .task {
+                await loadData()
+            }
+        }
     }
     
     func loadData() async {
-// Создание URL, который хотим прочитать
+        // Создание URL, который хотим прочитать
         guard let url = URL(string: "https://itunes.apple.com/search?term=taylor+swift&entity=song") else {
             print("Invalid URL")
             return
         }
-// Получение данных для этого URL
+        // Получение данных для этого URL
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             // Декодирование результата обработки этих данных в Response структуру
