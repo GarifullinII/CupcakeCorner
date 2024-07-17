@@ -21,6 +21,20 @@ struct ContentView: View {
     @State private var results = [Result]()
 
     var body: some View {
+    VStack{
+        AsyncImage(url: URL(string: "https://hws.dev/img/logo.png")) { phase in
+            if let image = phase.image {
+                image
+                    .resizable()
+                    .scaledToFit()
+            } else if phase.error != nil {
+                Text("There was an error loading the image.")
+            } else {
+                ProgressView()
+            }
+        }
+        .frame(width: 50, height: 50)
+        
         List(results, id: \.trackId) { item in
             VStack(alignment: .leading) {
                 Text(item.trackName)
@@ -31,6 +45,7 @@ struct ContentView: View {
         .task {
             await loadData()
         }
+    }
     }
     
     func loadData() async {
